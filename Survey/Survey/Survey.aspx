@@ -21,8 +21,16 @@
 
         <div>
             <asp:TextBox ID="textBoxAnswer" runat="server" Width="632px"></asp:TextBox>
+            <asp:RequiredFieldValidator ID ="textBoxAnswerValidator"
+                                        runat="server" 
+                                        ErrorMessage ="check opt out if not answered"
+                                        ControlToValidate ="textBoxAnswer"
+                                        Enabled="false"
+                                        ForeColor="red"
+                                        Display="Dynamic">
+            </asp:RequiredFieldValidator>
             <asp:Label ID="optOutLabel" runat="server" Text="Opt out"></asp:Label>
-            <asp:CheckBox ID="checkBoxOptOut" runat="server" />
+            <asp:CheckBox ID="checkBoxOptOut" runat="server" OnClick="enableValidation"/>
         </div>
 
         <asp:Button ID="btnSubmit" runat="server" OnClick="onBtnSubmitClick" Text="Submit" />
