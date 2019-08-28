@@ -16,7 +16,7 @@ namespace Survey.Data
 
         //List used to store all unaswered question for that client
         private DataSet questions = new DataSet();
-        private int currentQuestion = 0;
+        private int nextQuestion = 0;
 
 
         protected void Page_Load(object sender, EventArgs e)
@@ -34,10 +34,15 @@ namespace Survey.Data
 
         protected void onBtnSubmitClick(object sender, EventArgs e)
         {
+            if(!checkBoxOptOut.Checked)
+            {
+                textBoxAnswerValidator.Enabled = true;
+            }
             using (SqlConnection connection = new SqlConnection(conString))
             {
                 connection.Open();
-                SqlCommand cmd = new SqlCommand(getInsertAnswerSQL(textBoxAnswer.Text, checkBoxOptOut.Checked), connection);
+                string sql = getInsertAnswerSQL(textBoxAnswer.Text, checkBoxOptOut.Checked);
+                SqlCommand cmd = new SqlCommand(sql, connection);
                 try
                 {
                     cmd.ExecuteNonQuery();
@@ -46,6 +51,8 @@ namespace Survey.Data
                 { }
                 connection.Close();
             }
+            getNextQuestion();
+            textBoxAnswer.Text = "";
         }
 
         protected void getQuestionSet()
@@ -64,12 +71,26 @@ namespace Survey.Data
         {
             try
             {
-                questionText.Text = questions.Tables[0].Rows[currentQuestion]["QuestionText"].ToString();
-                currentQuestion ++;
+                questionText.Text = questions.Tables[0].Rows[nextQuestion]["QuestionText"].ToString();
+                nextQuestion ++;
+            } 
+            catch
+            {
+                questionText.Text = "No new question avaliable";
             }
-            //catch is empty as 
-            catch { }
             
+        }
+        
+        protected void enableValidation()
+        {
+            if(checkBoxOptOut.Checked)
+            {
+                textBoxAnswerValidator.Enabled = false;
+            }
+            else
+            {
+                textBoxAnswerValidator.Enabled = true;
+            }
         }
 
         protected string getQuestionSQL()
@@ -79,9 +100,9 @@ namespace Survey.Data
             {
                 return "SELECT S.tblSurveyID, S.QuestionText, S.QuestionDescription, S.Active, S.Modified, S.Created " +
                        "FROM tblSurvey S " +
-                       "WHERE S.tblSurveyID IN (SELECT tblSurvey_ID " +
+                       "WHERE S.tblSurveyID NOT IN (SELECT tblSurvey_ID " +
                        "FROM tblSurveyAnswers " +
-                       $"WHERE tblUser_ID != {Session["UserID"]})";
+                       $"WHERE tblUser_ID = {Session["UserID"].ToString()})";
             }
             else
             {
@@ -92,10 +113,19 @@ namespace Survey.Data
 
         protected string getInsertAnswerSQL(string responds, bool OptOut)
         {
-            string questionID = questions.Tables[0].Rows[currentQuestion]["tblSurveyID"].ToString();
+            //nextQuestion - 1 to get current question
+            string questionID = questions.Tables[0].Rows[nextQuestion - 1]["tblSurveyID"].ToString();
 
-            return "INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut) " +
-                   $"VALUES({Session["UserID"].ToString()},{questionID}, {responds}, {OptOut} )";
+            if (!OptOut)
+            {
+                return "INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut) " +
+                       $"VALUES({Session["UserID"].ToString()},{questionID},{responds}, 0 )";
+            }
+            else
+            {
+                return "INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut) " +
+                      $"VALUES({Session["UserID"].ToString()},{questionID}, null, 1 )";   
+            }
         }
     }
 }
