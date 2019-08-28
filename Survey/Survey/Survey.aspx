@@ -27,7 +27,8 @@
                             runat="server" 
                             onservervalidate="isAnswerRequired"
                             ErrorMessage="check opt out if now answer is provided"
-                            ForeColor = "Red">
+                            ForeColor = "Red"
+                            ValidateEmptyText ="true">
              </asp:CustomValidator>
             <asp:Label ID="optOutLabel" runat="server" Text="Opt out"></asp:Label>
             <asp:CheckBox ID="checkBoxOptOut" runat="server" OnClick="enableValidation"/>
