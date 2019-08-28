@@ -34,25 +34,43 @@ namespace Survey.Data
 
         protected void onBtnSubmitClick(object sender, EventArgs e)
         {
-            if(!checkBoxOptOut.Checked)
+            if (Page.IsValid)
             {
-                textBoxAnswerValidator.Enabled = true;
-            }
-            using (SqlConnection connection = new SqlConnection(conString))
-            {
-                connection.Open();
-                string sql = getInsertAnswerSQL(textBoxAnswer.Text, checkBoxOptOut.Checked);
-                SqlCommand cmd = new SqlCommand(sql, connection);
-                try
+                using (SqlConnection connection = new SqlConnection(conString))
                 {
-                    cmd.ExecuteNonQuery();
+                    connection.Open();
+                    string sql = getInsertAnswerSQL(textBoxAnswer.Text, checkBoxOptOut.Checked);
+                    SqlCommand cmd = new SqlCommand(sql, connection);
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch
+                    { }
+                    connection.Close();
                 }
-                catch
-                { }
-                connection.Close();
+                getNextQuestion();
+                textBoxAnswer.Text = "";
             }
-            getNextQuestion();
-            textBoxAnswer.Text = "";
+        }
+
+        protected void isAnswerRequired(object sender, ServerValidateEventArgs e)
+        {
+            if(checkBoxOptOut.Checked)
+            {
+                e.IsValid = true;
+            }
+            else
+            {
+                if(textBoxAnswer.Text!= "")
+                {
+                    e.IsValid = true;
+                }
+                else
+                {
+                    e.IsValid = false;
+                }
+            }
         }
 
         protected void getQuestionSet()
@@ -79,18 +97,6 @@ namespace Survey.Data
                 questionText.Text = "No new question avaliable";
             }
             
-        }
-        
-        protected void enableValidation()
-        {
-            if(checkBoxOptOut.Checked)
-            {
-                textBoxAnswerValidator.Enabled = false;
-            }
-            else
-            {
-                textBoxAnswerValidator.Enabled = true;
-            }
         }
 
         protected string getQuestionSQL()
