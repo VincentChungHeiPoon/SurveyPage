@@ -71,7 +71,10 @@ namespace Survey.Data
                     e.IsValid = false;
                 }
             }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3239f6f704a46df7777b560a839964f52ca995bf
         }
 
         protected void getQuestionSet()
