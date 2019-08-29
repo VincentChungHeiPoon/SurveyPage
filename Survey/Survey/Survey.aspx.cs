@@ -39,15 +39,33 @@ namespace Survey.Data
                 using (SqlConnection connection = new SqlConnection(conString))
                 {
                     connection.Open();
-                    string sql = getInsertAnswerSQL(textBoxAnswer.Text, checkBoxOptOut.Checked);
-                    SqlCommand cmd = new SqlCommand(sql, connection);
-                    try
+                    using (SqlDataAdapter adapter = new SqlDataAdapter())
                     {
-                        cmd.ExecuteNonQuery();
+                        SqlCommand cmd = new SqlCommand();
+                        if (Session["UserID"].ToString() != null)
+                        {
+                            string questionID = questions.Tables[0].Rows[nextQuestion - 1]["tblSurveyID"].ToString();
+                            
+                            if(checkBoxOptOut.Checked)
+                            {
+                                cmd = new SqlCommand("procedureInsertAnswerOptOut", connection);
+                                cmd.Parameters.Add(new SqlParameter("@OptOut", '0'));
+                            }
+                            else
+                            {
+                                cmd = new SqlCommand("procedureInsertAnswer", connection);
+                                cmd.Parameters.Add(new SqlParameter("@OptOut", '1'));
+                            }
+                            cmd.Parameters.Add(new SqlParameter("@UserID", Session["UserID"].ToString()));
+                            cmd.Parameters.Add(new SqlParameter("@SurveyID", questionID));
+                            cmd.Parameters.Add(new SqlParameter("@Responds", textBoxAnswer.Text));
+                            cmd.CommandType = CommandType.StoredProcedure;
+                        }
+
+                        
+                            cmd.ExecuteNonQuery();
+                        
                     }
-                    catch
-                    { }
-                    connection.Close();
                 }
                 getNextQuestion();
                 textBoxAnswer.Text = "";
@@ -71,10 +89,6 @@ namespace Survey.Data
                     e.IsValid = false;
                 }
             }
-<<<<<<< HEAD
-
-=======
->>>>>>> 3239f6f704a46df7777b560a839964f52ca995bf
         }
 
         protected void getQuestionSet()
@@ -83,7 +97,18 @@ namespace Survey.Data
             {
                 using (SqlDataAdapter adapter = new SqlDataAdapter())
                 {
-                    adapter.SelectCommand = new SqlCommand(getQuestionSQL(), connection);
+                    SqlCommand cmd = new SqlCommand();
+                    if (Session["UserID"].ToString() != null)
+                    {                        
+                        cmd = new SqlCommand("procedureSelectQuestion", connection);
+                        cmd.Parameters.Add(new SqlParameter("@UserID", Session["UserID"].ToString()));
+                    }
+                    else
+                    {
+                        cmd = new SqlCommand("procedureSelectAllQuestion", connection);
+                    }
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    adapter.SelectCommand = cmd;
                     adapter.Fill(questions);
                 }
             }
@@ -101,41 +126,6 @@ namespace Survey.Data
                 questionText.Text = "No new question avaliable";
             }
             
-        }
-
-        protected string getQuestionSQL()
-        {
-
-            if (Session["UserID"] != null)
-            {
-                return "SELECT S.tblSurveyID, S.QuestionText, S.QuestionDescription, S.Active, S.Modified, S.Created " +
-                       "FROM tblSurvey S " +
-                       "WHERE S.tblSurveyID NOT IN (SELECT tblSurvey_ID " +
-                       "FROM tblSurveyAnswers " +
-                       $"WHERE tblUser_ID = {Session["UserID"].ToString()})";
-            }
-            else
-            {
-                return "SELECT * " +
-                       "FROM tblSurvey S";
-            }
-        }
-
-        protected string getInsertAnswerSQL(string responds, bool OptOut)
-        {
-            //nextQuestion - 1 to get current question
-            string questionID = questions.Tables[0].Rows[nextQuestion - 1]["tblSurveyID"].ToString();
-
-            if (!OptOut)
-            {
-                return "INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut) " +
-                       $"VALUES({Session["UserID"].ToString()},{questionID},{responds}, 0 )";
-            }
-            else
-            {
-                return "INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut) " +
-                      $"VALUES({Session["UserID"].ToString()},{questionID}, null, 1 )";   
-            }
         }
     }
 }

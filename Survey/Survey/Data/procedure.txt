@@ -1,0 +1,18 @@
+CREATE PROCEDURE procedureSelectQuestion @UserID varchar(100) AS
+BEGIN
+SELECT S.tblSurveyID, S.QuestionText, S.QuestionDescription, S.Active, S.Modified, S.Created
+FROM tblSurvey S
+WHERE S.tblSurveyID NOT IN (SELECT tblSurvey_ID
+							FROM tblSurveyAnswers
+							WHERE tblUser_ID = @UserID)
+END;
+
+EXEC procedureSelectQuestion parem;
+
+CREATE PROCEDURE procedureSelectAllQuestion AS
+BEGIN
+SELECT *
+FROM tblSurvey
+END;
+
+EXEC procedureSelectAllQuestion;
