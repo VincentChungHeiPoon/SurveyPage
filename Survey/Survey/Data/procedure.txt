@@ -16,3 +16,15 @@ FROM tblSurvey
 END;
 
 EXEC procedureSelectAllQuestion;
+
+CREATE PROCEDURE [dbo].[procedureInsertAnswer] @UserID  VARCHAR(100), @SurveyID VARCHAR(1024), @Responds VARCHAR(1024), @OptOut bit AS
+BEGIN
+INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut)
+VALUES(@UserID, @SurveyID,@Responds, 0 )
+END;
+
+CREATE PROCEDURE [dbo].[procedureInsertAnswerOptOut] @UserID  VARCHAR(100), @SurveyID VARCHAR(1024), @Responds VARCHAR(1024), @OptOut bit AS
+BEGIN
+INSERT INTO tblSurveyAnswers(tblUser_ID, tblSurvey_ID, UserAnswer, OptOut)
+VALUES(@UserID, @SurveyID,NULL, 1)
+END;
