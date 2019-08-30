@@ -25,6 +25,10 @@ namespace Survey.Data
             {
                 labelUserID.Text = Session["UserID"].ToString();
             }
+            else
+            {
+                Response.Redirect("Login.aspx");
+            }
 
             getQuestionSet();
             //fill the questionText label with the first question
@@ -69,25 +73,20 @@ namespace Survey.Data
                 }
                 getNextQuestion();
                 textBoxAnswer.Text = "";
+                checkBoxOptOut.Checked = false;
             }
         }
 
         protected void isAnswerRequired(object sender, ServerValidateEventArgs e)
         {
-            if(checkBoxOptOut.Checked)
+
+            if(checkBoxOptOut.Checked || textBoxAnswer.Text != "")
             {
                 e.IsValid = true;
             }
             else
             {
-                if(textBoxAnswer.Text!= "")
-                {
-                    e.IsValid = true;
-                }
-                else
-                {
-                    e.IsValid = false;
-                }
+                e.IsValid = false;
             }
         }
 
