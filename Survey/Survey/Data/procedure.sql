@@ -7,7 +7,7 @@ WHERE S.tblSurveyID NOT IN (SELECT tblSurvey_ID
 							WHERE tblUser_ID = @UserID)
 END;
 
-EXEC procedureSelectQuestion parem;
+-- EXEC procedureSelectQuestion parem;
 
 CREATE PROCEDURE procedureSelectAllQuestion AS
 BEGIN
@@ -15,7 +15,7 @@ SELECT *
 FROM tblSurvey
 END;
 
-EXEC procedureSelectAllQuestion;
+-- EXEC procedureSelectAllQuestion;
 
 CREATE PROCEDURE [dbo].[procedureInsertAnswer] @UserID  VARCHAR(100), @SurveyID VARCHAR(1024), @Responds VARCHAR(1024), @OptOut bit AS
 BEGIN
